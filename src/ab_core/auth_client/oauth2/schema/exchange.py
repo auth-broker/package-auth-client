@@ -1,4 +1,4 @@
-# obo_core/auth/oauth2/schema/exchange.py
+# ab_core/auth/oauth2/schema/exchange.py
 from pydantic import AnyHttpUrl, BaseModel
 
 

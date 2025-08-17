@@ -1,9 +1,9 @@
-# obo_core/auth/oauth2/schema/authorize.py
+# ab_core/auth/oauth2/schema/authorize.py
 from typing import Dict, Optional
 
 from pydantic import AnyHttpUrl, BaseModel, Field
 
-from obo_core.pkce.methods import PKCE, S256PKCE
+from ab_core.pkce.methods import PKCE, S256PKCE
 
 # ---------- Requests ----------
 

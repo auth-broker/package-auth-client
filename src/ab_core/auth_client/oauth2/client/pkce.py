@@ -5,17 +5,17 @@ from typing import Literal, override
 import requests
 from yarl import URL
 
-from obo_core.auth_client.oauth2.schema.authorize import (
+from ab_core.auth_client.oauth2.schema.authorize import (
     PKCEAuthorizeResponse,
     PKCEBuildAuthorizeRequest,
 )
-from obo_core.auth_client.oauth2.schema.client_type import OAuth2ClientType
-from obo_core.auth_client.oauth2.schema.exchange import (
+from ab_core.auth_client.oauth2.schema.client_type import OAuth2ClientType
+from ab_core.auth_client.oauth2.schema.exchange import (
     PKCEExchangeCodeRequest,
     PKCEExchangeFromRedirectUrlRequest,
 )
-from obo_core.auth_client.oauth2.schema.token import OAuth2Token
-from obo_core.cache.caches.base import CacheSession
+from ab_core.auth_client.oauth2.schema.token import OAuth2Token
+from ab_core.cache.caches.base import CacheSession
 
 from .base import OAuth2ClientBase
 

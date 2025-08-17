@@ -4,17 +4,17 @@ from urllib.parse import parse_qs, urlparse
 
 from pydantic import BaseModel, Field
 
-from obo_core.auth_client.oauth2.schema.authorize import (
+from ab_core.auth_client.oauth2.schema.authorize import (
     OAuth2AuthorizeResponse,
     OAuth2BuildAuthorizeRequest,
 )
-from obo_core.auth_client.oauth2.schema.exchange import (
+from ab_core.auth_client.oauth2.schema.exchange import (
     OAuth2ExchangeCodeRequest,
     OAuth2ExchangeFromRedirectUrlRequest,
 )
-from obo_core.auth_client.oauth2.schema.oidc import OIDCConfig
-from obo_core.auth_client.oauth2.schema.token import OAuth2Token
-from obo_core.cache.caches.base import CacheSession
+from ab_core.auth_client.oauth2.schema.oidc import OIDCConfig
+from ab_core.auth_client.oauth2.schema.token import OAuth2Token
+from ab_core.cache.caches.base import CacheSession
 
 BuildReqT = TypeVar("BuildReqT", bound=OAuth2BuildAuthorizeRequest)
 BuildResT = TypeVar("BuildResT", bound=OAuth2AuthorizeResponse)
