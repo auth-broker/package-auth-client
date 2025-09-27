@@ -28,7 +28,7 @@ description = ""
 name = "ab-auth-client"
 readme = "README.md"
 requires-python = ">=3.12, <4"
-version = "0.1.1"
+version = "0.1.2"
 
 # [tool.uv.sources]
 # ab-cache = { git = "https://github.com/auth-broker/package-cache", tag= "0.1.1" }
