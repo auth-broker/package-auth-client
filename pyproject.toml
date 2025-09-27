@@ -6,7 +6,7 @@ requires = ["hatchling"]
 dev = [
   "debugpy>=1.8.14,<2",
   "isort>=6.0.1,<7",
-  "ab-test-fixtures>=0.1.2,<2",
+  "ab-test-fixtures>=0.1.2,<1",
   "pre-commit>=4.2.0,<5",
   "pytest-asyncio>=1.0.0,<2",
   "pytest-cov>=6.2.1,<7",
@@ -18,8 +18,8 @@ dev = [
 [project]
 authors = [{email = "53892067+mattcoulter7@users.noreply.github.com", name = "Matthew Coulter"}]
 dependencies = [
-  "ab-cache>=0.1.2,<2",
-  "ab-pkce>=0.1.2,<2",
+  "ab-cache>=0.1.2,<1",
+  "ab-pkce>=0.1.2,<1",
   "pydantic>=2.11.7,<3",
   "requests>=2.32.4,<3",
   "yarl>=1.20.1,<2"
