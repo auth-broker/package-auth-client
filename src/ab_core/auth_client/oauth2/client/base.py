@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
+from typing import (
+    Generic,
+    TypeVar,
+)
 from urllib.parse import parse_qs, urlparse
 
 from pydantic import BaseModel, Field
@@ -15,7 +18,7 @@ from ab_core.auth_client.oauth2.schema.exchange import (
 from ab_core.auth_client.oauth2.schema.oidc import OIDCConfig
 from ab_core.auth_client.oauth2.schema.refresh import RefreshTokenRequest
 from ab_core.auth_client.oauth2.schema.token import OAuth2Token
-from ab_core.cache.caches.base import CacheSession
+from ab_core.cache.caches.base import CacheAsyncSession, CacheSession
 
 BuildReqT = TypeVar("BuildReqT", bound=OAuth2BuildAuthorizeRequest)
 BuildResT = TypeVar("BuildResT", bound=OAuth2AuthorizeResponse)
@@ -33,7 +36,14 @@ class OAuth2ClientBase(BaseModel, ABC, Generic[BuildReqT, BuildResT, ExReqT, ExU
         request: BuildReqT,
         *,
         cache_session: CacheSession | None = None,  # separate param
-        state_ttl: int | None = 600,  # separate param
+    ) -> BuildResT: ...
+
+    @abstractmethod
+    async def build_authorize_request_async(
+        self,
+        request: BuildReqT,
+        *,
+        cache_session: CacheAsyncSession | None = None,
     ) -> BuildResT: ...
 
     # ---------- Exchanges ----------
@@ -46,6 +56,14 @@ class OAuth2ClientBase(BaseModel, ABC, Generic[BuildReqT, BuildResT, ExReqT, ExU
     ) -> OAuth2Token: ...
 
     @abstractmethod
+    async def exchange_code_async(
+        self,
+        request: ExReqT,
+        *,
+        cache_session: CacheAsyncSession | None = None,
+    ) -> OAuth2Token: ...
+
+    @abstractmethod
     def exchange_from_redirect_url(
         self,
         request: ExUrlReqT,
@@ -54,11 +72,27 @@ class OAuth2ClientBase(BaseModel, ABC, Generic[BuildReqT, BuildResT, ExReqT, ExU
     ) -> OAuth2Token: ...
 
     @abstractmethod
+    async def exchange_from_redirect_url_async(
+        self,
+        request: ExUrlReqT,
+        *,
+        cache_session: CacheAsyncSession | None = None,
+    ) -> OAuth2Token: ...
+
+    @abstractmethod
     def refresh(
         self,
         request: RefreshTokenRequest,
         *,
         cache_session: CacheSession | None = None,
+    ) -> OAuth2Token: ...
+
+    @abstractmethod
+    async def refresh_async(
+        self,
+        request: RefreshTokenRequest,
+        *,
+        cache_session: CacheAsyncSession | None = None,
     ) -> OAuth2Token: ...
 
     # ---------- Helpers ----------
