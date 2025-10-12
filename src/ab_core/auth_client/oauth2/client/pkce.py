@@ -148,7 +148,7 @@ class PKCEOAuth2Client(
         return OAuth2Token.model_validate(resp.json())
 
     @override
-    def refresh_token(
+    def refresh(
         self,
         request: RefreshTokenRequest,
         *,

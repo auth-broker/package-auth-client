@@ -94,7 +94,7 @@ class StandardOAuth2Client(
         return self.exchange_code(OAuth2ExchangeCodeRequest(code=code))
 
     @override
-    def refresh_token(
+    def refresh(
         self,
         request: RefreshTokenRequest,
         *,

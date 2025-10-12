@@ -38,13 +38,28 @@ class OAuth2ClientBase(BaseModel, ABC, Generic[BuildReqT, BuildResT, ExReqT, ExU
 
     # ---------- Exchanges ----------
     @abstractmethod
-    def exchange_code(self, request: ExReqT) -> OAuth2Token: ...
+    def exchange_code(
+        self,
+        request: ExReqT,
+        *,
+        cache_session: CacheSession | None = None,
+    ) -> OAuth2Token: ...
 
     @abstractmethod
-    def exchange_from_redirect_url(self, request: ExUrlReqT) -> OAuth2Token: ...
+    def exchange_from_redirect_url(
+        self,
+        request: ExUrlReqT,
+        *,
+        cache_session: CacheSession | None = None,
+    ) -> OAuth2Token: ...
 
     @abstractmethod
-    def refresh(self, request: RefreshTokenRequest) -> OAuth2Token: ...
+    def refresh(
+        self,
+        request: RefreshTokenRequest,
+        *,
+        cache_session: CacheSession | None = None,
+    ) -> OAuth2Token: ...
 
     # ---------- Helpers ----------
     def _parse_code_and_state_from_redirect(self, redirect_url: str) -> tuple[str, str | None]:
