@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Generic, Optional, TypeVar
+from typing import Generic, TypeVar
 from urllib.parse import parse_qs, urlparse
 
 from pydantic import BaseModel, Field
@@ -13,6 +13,7 @@ from ab_core.auth_client.oauth2.schema.exchange import (
     OAuth2ExchangeFromRedirectUrlRequest,
 )
 from ab_core.auth_client.oauth2.schema.oidc import OIDCConfig
+from ab_core.auth_client.oauth2.schema.refresh import RefreshTokenRequest
 from ab_core.auth_client.oauth2.schema.token import OAuth2Token
 from ab_core.cache.caches.base import CacheSession
 
@@ -32,7 +33,7 @@ class OAuth2ClientBase(BaseModel, ABC, Generic[BuildReqT, BuildResT, ExReqT, ExU
         request: BuildReqT,
         *,
         cache_session: CacheSession | None = None,  # separate param
-        state_ttl: Optional[int] = 600,  # separate param
+        state_ttl: int | None = 600,  # separate param
     ) -> BuildResT: ...
 
     # ---------- Exchanges ----------
@@ -41,6 +42,9 @@ class OAuth2ClientBase(BaseModel, ABC, Generic[BuildReqT, BuildResT, ExReqT, ExU
 
     @abstractmethod
     def exchange_from_redirect_url(self, request: ExUrlReqT) -> OAuth2Token: ...
+
+    @abstractmethod
+    def refresh(self, request: RefreshTokenRequest) -> OAuth2Token: ...
 
     # ---------- Helpers ----------
     def _parse_code_and_state_from_redirect(self, redirect_url: str) -> tuple[str, str | None]:
@@ -57,6 +61,5 @@ class OAuth2ClientBase(BaseModel, ABC, Generic[BuildReqT, BuildResT, ExReqT, ExU
         cp = urlparse(str(self.config.redirect_uri))
         if (rp.scheme, rp.netloc, rp.path) != (cp.scheme, cp.netloc, cp.path):
             raise ValueError(
-                f"Redirect URL `{redirect_url}` does not match configured"
-                f" redirect_uri `{self.config.redirect_uri}`"
+                f"Redirect URL `{redirect_url}` does not match configured redirect_uri `{self.config.redirect_uri}`"
             )

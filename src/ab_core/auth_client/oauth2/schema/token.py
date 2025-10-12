@@ -1,12 +1,11 @@
-from typing import Optional
 
 from pydantic import BaseModel
 
 
 class OAuth2Token(BaseModel):
     access_token: str
-    id_token: Optional[str] = None
-    refresh_token: Optional[str] = None
+    id_token: str | None = None
+    refresh_token: str | None = None
     expires_in: int
-    scope: Optional[str] = None
+    scope: str | None = None
     token_type: str

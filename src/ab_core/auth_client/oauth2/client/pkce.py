@@ -14,6 +14,7 @@ from ab_core.auth_client.oauth2.schema.exchange import (
     PKCEExchangeCodeRequest,
     PKCEExchangeFromRedirectUrlRequest,
 )
+from ab_core.auth_client.oauth2.schema.refresh import RefreshTokenRequest
 from ab_core.auth_client.oauth2.schema.token import OAuth2Token
 from ab_core.cache.caches.base import CacheSession
 
@@ -38,9 +39,7 @@ class PKCEOAuth2Client(
         cache_session: CacheSession | None = None,  # separate param (not in request)
     ) -> PKCEAuthorizeResponse:
         # Base builds URL + state
-        state = request.state or base64.urlsafe_b64encode(secrets.token_bytes(16)).decode().rstrip(
-            "="
-        )
+        state = request.state or base64.urlsafe_b64encode(secrets.token_bytes(16)).decode().rstrip("=")
 
         q: dict[str, str] = {
             "response_type": request.response_type,
@@ -74,23 +73,6 @@ class PKCEOAuth2Client(
 
         return res
 
-    # ---- internals ----
-    def _lookup_verifier(
-        self,
-        *,
-        state: str,
-        delete_after: bool,
-        cache_session: CacheSession | None = None,
-    ) -> str:
-        if cache_session is None:
-            raise ValueError("code_verifier not provided and no cache_session configured on client")
-        rec = cache_session.get(f"pkce:{state}")
-        if rec is None or "verifier" not in rec:
-            raise ValueError("code_verifier not found in cache for given state")
-        if delete_after:
-            cache_session.delete(f"pkce:{state}")
-        return rec["verifier"]
-
     # ---- exchanges ----
     @override
     def exchange_code(
@@ -103,9 +85,7 @@ class PKCEOAuth2Client(
         code_verifier = request.code_verifier
         if code_verifier is None:
             if not request.state:
-                raise ValueError(
-                    "code_verifier missing; provide it or supply state for cache lookup"
-                )
+                raise ValueError("code_verifier missing; provide it or supply state for cache lookup")
             code_verifier = self._lookup_verifier(
                 state=request.state,
                 delete_after=request.delete_after,
@@ -166,3 +146,49 @@ class PKCEOAuth2Client(
         )
         resp.raise_for_status()
         return OAuth2Token.model_validate(resp.json())
+
+    @override
+    def refresh_token(
+        self,
+        request: RefreshTokenRequest,
+        *,
+        cache_session: CacheSession | None = None,  # kept for symmetry
+    ) -> OAuth2Token:
+        payload = {
+            "grant_type": "refresh_token",
+            "client_id": self.config.client_id,
+            "refresh_token": request.refresh_token,
+        }
+        if request.scope:
+            payload["scope"] = request.scope
+
+        resp = requests.post(
+            self.config.token_url,
+            data=payload,
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+        resp.raise_for_status()
+        data = resp.json()
+
+        # Some IdPs (e.g. Cognito) rotate refresh tokens; keep the new one if present.
+        if "refresh_token" not in data:
+            data["refresh_token"] = request.refresh_token
+
+        return OAuth2Token.model_validate(data)
+
+    # ---- internals ----
+    def _lookup_verifier(
+        self,
+        *,
+        state: str,
+        delete_after: bool,
+        cache_session: CacheSession | None = None,
+    ) -> str:
+        if cache_session is None:
+            raise ValueError("code_verifier not provided and no cache_session configured on client")
+        rec = cache_session.get(f"pkce:{state}")
+        if rec is None or "verifier" not in rec:
+            raise ValueError("code_verifier not found in cache for given state")
+        if delete_after:
+            cache_session.delete(f"pkce:{state}")
+        return rec["verifier"]

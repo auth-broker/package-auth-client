@@ -6,9 +6,6 @@ from .pkce import PKCEOAuth2Client
 from .standard import StandardOAuth2Client
 
 OAuth2Client = Annotated[
-    Union[
-        StandardOAuth2Client,
-        PKCEOAuth2Client,
-    ],
+    StandardOAuth2Client | PKCEOAuth2Client,
     Discriminator("type"),
 ]

@@ -14,6 +14,7 @@ from ab_core.auth_client.oauth2.schema.exchange import (
     OAuth2ExchangeCodeRequest,
     OAuth2ExchangeFromRedirectUrlRequest,
 )
+from ab_core.auth_client.oauth2.schema.refresh import RefreshTokenRequest
 from ab_core.auth_client.oauth2.schema.token import OAuth2Token
 from ab_core.cache.caches.base import CacheSession
 
@@ -38,9 +39,7 @@ class StandardOAuth2Client(
         *,
         cache_session: CacheSession | None = None,
     ) -> OAuth2AuthorizeResponse:
-        state = request.state or base64.urlsafe_b64encode(secrets.token_bytes(16)).decode().rstrip(
-            "="
-        )
+        state = request.state or base64.urlsafe_b64encode(secrets.token_bytes(16)).decode().rstrip("=")
 
         q: dict[str, str] = {
             "response_type": request.response_type,
@@ -93,3 +92,35 @@ class StandardOAuth2Client(
         if request.expected_state is not None and state != request.expected_state:
             raise ValueError("state mismatch")
         return self.exchange_code(OAuth2ExchangeCodeRequest(code=code))
+
+    @override
+    def refresh_token(
+        self,
+        request: RefreshTokenRequest,
+        *,
+        cache_session: CacheSession | None = None,  # kept for symmetry
+    ) -> OAuth2Token:
+        if not self.config.client_secret:
+            raise ValueError("client_secret required for standard client refresh")
+
+        payload: dict[str, str] = {
+            "grant_type": "refresh_token",
+            "client_id": self.config.client_id,
+            "client_secret": self.config.client_secret,
+            "refresh_token": request.refresh_token,
+        }
+        if request.scope:
+            payload["scope"] = request.scope  # optional; most IdPs ignore unless narrowing
+
+        resp = requests.post(
+            self.config.token_url,
+            data=payload,
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+        resp.raise_for_status()
+        data = resp.json()
+
+        # Keep original refresh token if server doesn’t rotate it.
+        data.setdefault("refresh_token", request.refresh_token)
+
+        return OAuth2Token.model_validate(data)
