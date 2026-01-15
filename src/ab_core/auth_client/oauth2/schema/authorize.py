@@ -1,6 +1,7 @@
 # ab_core/auth/oauth2/schema/authorize.py
 
-from typing import Literal
+from typing import Annotated, Literal
+
 from pydantic import AnyHttpUrl, BaseModel, Field
 
 from ab_core.pkce.methods import PKCE, S256PKCE
