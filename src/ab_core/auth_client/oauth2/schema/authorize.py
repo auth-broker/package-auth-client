@@ -1,6 +1,7 @@
 # ab_core/auth/oauth2/schema/authorize.py
 
-from pydantic import AnyHttpUrl, BaseModel, Field, Literal
+from typing import Literal
+from pydantic import AnyHttpUrl, BaseModel, Field
 
 from ab_core.pkce.methods import PKCE, S256PKCE
 
@@ -26,7 +27,7 @@ class PKCEBuildAuthorizeRequest(OAuth2BuildAuthorizeRequest):
     )
 
 
-AuthorizeRequest = Annotated[
+BuildAuthorizeRequest = Annotated[
     OAuth2BuildAuthorizeRequest | PKCEBuildAuthorizeRequest,
     Field(discriminator="type"),
 ]
