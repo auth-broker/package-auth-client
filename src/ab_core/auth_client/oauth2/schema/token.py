@@ -10,6 +10,7 @@ class OAuth2Token(BaseModel):
     expires_in: int
     scope: str | None = None
     token_type: str
+    app_context: dict[str, str] | None = None
 
 
 class OAuth2TokenExposed(BaseModel):
@@ -18,3 +19,4 @@ class OAuth2TokenExposed(BaseModel):
     access_token: str
     id_token: str | None = None
     refresh_token: str | None = None
+    app_context: dict[str, str] | None = None
