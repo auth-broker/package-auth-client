@@ -68,8 +68,11 @@ class PKCEOAuth2Client(
         if cache_session is not None:
             cache_session.set(
                 key=f"pkce:{res.state}",
-                value={"verifier": res.code_verifier},
-                expiry=request.state_ttl or 600,
+                value={
+                    "verifier": res.code_verifier,
+                    "app_context": request.app_context,
+                },
+                expiry=request.state_ttl,
             )
 
         return res
@@ -107,8 +110,11 @@ class PKCEOAuth2Client(
         if cache_session is not None:
             await cache_session.set(  # assume async cache has awaitable set
                 key=f"pkce:{res.state}",
-                value={"verifier": res.code_verifier},
-                expiry=request.state_ttl or 600,
+                value={
+                    "verifier": res.code_verifier,
+                    "app_context": request.app_context,
+                },
+                expiry=request.state_ttl,
             )
 
         return res
