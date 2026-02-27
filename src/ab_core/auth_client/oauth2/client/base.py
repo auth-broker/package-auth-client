@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import (
+    Any,
     Generic,
     TypeVar,
 )
@@ -28,6 +29,9 @@ ExUrlReqT = TypeVar("ExUrlReqT", bound=OAuth2ExchangeFromRedirectUrlRequest)
 
 class OAuth2ClientBase(BaseModel, ABC, Generic[BuildReqT, BuildResT, ExReqT, ExUrlReqT]):
     config: OIDCConfig = Field(..., description="OIDC client configuration")
+
+    @abstractmethod
+    def get_state_cache_key(self, state: str) -> str: ...
 
     # ---------- Authorize URL ----------
     @abstractmethod
@@ -112,3 +116,63 @@ class OAuth2ClientBase(BaseModel, ABC, Generic[BuildReqT, BuildResT, ExReqT, ExU
             raise ValueError(
                 f"Redirect URL `{redirect_url}` does not match configured redirect_uri `{self.config.redirect_uri}`"
             )
+
+    def _pop_state(
+        self,
+        *,
+        state: str,
+        keys: list[str] | tuple[str, ...],
+        delete_after: bool = True,
+        cache_session: CacheSession,
+    ) -> tuple[Any, ...]:
+        cache_key = self.get_state_cache_key(state)
+        cache_value = cache_session.get(cache_key)
+        if cache_value is None:
+            raise ValueError("state not found in cache for given state")
+        values = []
+        for key in keys:
+            values.append(cache_value.get(key))
+        if delete_after:
+            cache_session.delete(cache_key)
+        return tuple(values)
+
+    async def _pop_state_async(
+        self,
+        *,
+        state: str,
+        keys: list[str] | tuple[str, ...],
+        delete_after: bool = True,
+        cache_session: CacheAsyncSession,
+    ) -> tuple[Any, ...]:
+        cache_key = self.get_state_cache_key(state)
+        cache_value = await cache_session.get(cache_key)
+        if cache_value is None:
+            raise ValueError("state not found in cache for given state")
+        values = []
+        for key in keys:
+            values.append(cache_value.get(key))
+        if delete_after:
+            await cache_session.delete(cache_key)
+        return tuple(values)
+
+    def _save_state(
+        self,
+        *,
+        state: str,
+        value: dict,
+        expiry: int | None = None,
+        cache_session: CacheSession,
+    ) -> None:
+        cache_key = self.get_state_cache_key(state)
+        cache_session.set(key=cache_key, value=value, expiry=expiry)
+
+    async def _save_state_async(
+        self,
+        *,
+        state: str,
+        value: dict,
+        expiry: int | None = None,
+        cache_session: CacheAsyncSession,
+    ) -> None:
+        cache_key = self.get_state_cache_key(state)
+        await cache_session.set(key=cache_key, value=value, expiry=expiry)
