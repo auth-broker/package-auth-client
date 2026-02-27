@@ -53,8 +53,21 @@ class StandardOAuth2Client(
             q.update({k: str(v) for k, v in request.extra_params.items()})
 
         url = str(URL(str(self.config.authorize_url)).with_query(q))
+
+        res = OAuth2AuthorizeResponse(url=url, state=state)
+
+        # Persist verifier keyed by state if cache available
+        if cache_session is not None:
+            cache_session.set(
+                key=f"standard:{res.state}",
+                value={
+                    "app_context": request.app_context,
+                },
+                expiry=request.state_ttl,
+            )
+
         # Base returns the base response; subclasses can upcast to their own response type
-        return OAuth2AuthorizeResponse(url=url, state=state)
+        return res
 
     async def build_authorize_request_async(
         self,
@@ -75,8 +88,20 @@ class StandardOAuth2Client(
             q.update({k: str(v) for k, v in request.extra_params.items()})
 
         url = str(URL(str(self.config.authorize_url)).with_query(q))
+        
+        res = OAuth2AuthorizeResponse(url=url, state=state)
+
+        if cache_session is not None:
+            await cache_session.set(
+                key=f"standard:{res.state}",
+                value={
+                    "app_context": request.app_context,
+                },
+                expiry=request.state_ttl,
+            )
+        
         # Base returns the base response; subclasses can upcast to their own response type
-        return OAuth2AuthorizeResponse(url=url, state=state)
+        return res
 
     @override
     def exchange_code(
