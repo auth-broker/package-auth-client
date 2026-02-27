@@ -120,8 +120,7 @@ class StandardOAuth2Client(
         delete_after: bool = True,
         cache_session: CacheSession | None = None,
     ) -> dict[str, str] | None:
-        """Resolve OAuth2 app_context.
-        """
+        """Resolve OAuth2 app_context."""
         app_context = None
 
         if cache_session is None:
@@ -145,8 +144,7 @@ class StandardOAuth2Client(
         delete_after: bool = True,
         cache_session: CacheAsyncSession | None = None,
     ) -> dict[str, str] | None:
-        """Resolve OAuth2 app_context.
-        """
+        """Resolve OAuth2 app_context."""
         app_context = None
 
         if cache_session is None:
@@ -249,8 +247,12 @@ class StandardOAuth2Client(
             raise ValueError("state mismatch")
         return self.exchange_code(
             OAuth2ExchangeCodeRequest(
-                code=code, state=state, expected_state=request.expected_state, delete_after=request.delete_after
-            )
+                code=code,
+                state=state,
+                expected_state=request.expected_state,
+                delete_after=request.delete_after,
+            ),
+            cache_session=cache_session,
         )
 
     @override
@@ -267,8 +269,12 @@ class StandardOAuth2Client(
             raise ValueError("state mismatch")
         return await self.exchange_code_async(
             OAuth2ExchangeCodeRequest(
-                code=code, state=state, expected_state=request.expected_state, delete_after=request.delete_after
-            )
+                code=code,
+                state=state,
+                expected_state=request.expected_state,
+                delete_after=request.delete_after,
+            ),
+            cache_session=cache_session,
         )
 
     @override
