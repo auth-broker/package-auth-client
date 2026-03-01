@@ -363,7 +363,7 @@ class PKCEOAuth2Client(
         payload = {
             "grant_type": "refresh_token",
             "client_id": self.config.client_id,
-            "refresh_token": request.refresh_token,
+            "refresh_token": request.refresh_token.get_secret_value(),
         }
         if request.scope:
             payload["scope"] = request.scope
@@ -378,7 +378,7 @@ class PKCEOAuth2Client(
 
         # Some IdPs (e.g. Cognito) rotate refresh tokens; keep the new one if present.
         if "refresh_token" not in data:
-            data["refresh_token"] = request.refresh_token
+            data["refresh_token"] = request.refresh_token.get_secret_value()
 
         data["app_context"] = (
             None  # oauth2 flow doesn't have app_context at refresh time, but keep the field for consistency
@@ -395,7 +395,7 @@ class PKCEOAuth2Client(
         payload = {
             "grant_type": "refresh_token",
             "client_id": self.config.client_id,
-            "refresh_token": request.refresh_token,
+            "refresh_token": request.refresh_token.get_secret_value(),
         }
         if request.scope:
             payload["scope"] = request.scope
@@ -411,7 +411,7 @@ class PKCEOAuth2Client(
         data = resp.json()
 
         if "refresh_token" not in data:
-            data["refresh_token"] = request.refresh_token
+            data["refresh_token"] = request.refresh_token.get_secret_value()
 
         data["app_context"] = (
             None  # oauth2 flow doesn't have app_context at refresh time, but keep the field for consistency

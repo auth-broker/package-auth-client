@@ -291,7 +291,7 @@ class StandardOAuth2Client(
             "grant_type": "refresh_token",
             "client_id": self.config.client_id,
             "client_secret": self.config.client_secret,
-            "refresh_token": request.refresh_token,
+            "refresh_token": request.refresh_token.get_secret_value(),
         }
         if request.scope:
             payload["scope"] = request.scope  # optional; most IdPs ignore unless narrowing
@@ -305,7 +305,7 @@ class StandardOAuth2Client(
         data = resp.json()
 
         # Keep original refresh token if server doesn’t rotate it.
-        data.setdefault("refresh_token", request.refresh_token)
+        data.setdefault("refresh_token", request.refresh_token.get_secret_value())
 
         return OAuth2Token.model_validate(data)
 
@@ -322,7 +322,7 @@ class StandardOAuth2Client(
             "grant_type": "refresh_token",
             "client_id": self.config.client_id,
             "client_secret": self.config.client_secret,
-            "refresh_token": request.refresh_token,
+            "refresh_token": request.refresh_token.get_secret_value(),
         }
         if request.scope:
             payload["scope"] = request.scope
@@ -336,6 +336,6 @@ class StandardOAuth2Client(
             )
         resp.raise_for_status()
         data = resp.json()
-        data.setdefault("refresh_token", request.refresh_token)
+        data.setdefault("refresh_token", request.refresh_token.get_secret_value())
 
         return OAuth2Token.model_validate(data)
